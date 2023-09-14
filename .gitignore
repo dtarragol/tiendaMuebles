@@ -1,0 +1,7 @@
+# Excluir archivos y carpetas generados por Visual Studio Code
+.vscode/
+bin/
+obj/
+
+# Excluir la carpeta "facturas" y su contenido
+facturas/
