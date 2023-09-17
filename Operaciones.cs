@@ -1,5 +1,8 @@
 using Ventas.objetos;
 using System.Xml.Linq;
+using System;
+using System.Collections.Generic;
+
 
 namespace Ventas
 {
@@ -12,6 +15,15 @@ namespace Ventas
         }
         
         //CARGA DE DATOS INICIAL
+        /*
+        public List<Escritorio> DatosInicialesEscritorios()
+        {
+            List<Escritorio> lista= new List<Escritorio>();
+            lista.Add(new Escritorio(600, "Escritorio bonito", "EscritorioIKEA",2,1,1));
+            lista.Add(new Escritorio(400, "Escritorio grande", "EscritorioIKEA2",(decimal)2.5,(decimal)1.2,1));
+            lista.Add(new Escritorio(100, "Escritorio pequeño", "EscritorioIKEA3",2,(decimal)0.5,1));
+            return lista;
+        }
         public List<Armario> DatosInicialesArmarios()
         {
             List<Armario> lista = new List<Armario>();
@@ -43,11 +55,54 @@ namespace Ventas
             lista.Add(new ClienteVIP("79432310y","Antonia","Pepan","Pepon","Sabadell",25));
             lista.Add(new ClienteVIP("89432310y","Pablo","Duque","Fernandez","Terrasa",15));
             return lista;
+        }*/
+
+        public List<Tuple<string, object>> cargaDatosInicial()
+        {
+            List<Escritorio> listaEscritorios= new List<Escritorio>();
+            listaEscritorios.Add(new Escritorio(600, "Escritorio bonito", "EscritorioIKEA",2,1,1));
+            listaEscritorios.Add(new Escritorio(400, "Escritorio grande", "EscritorioIKEA2",(decimal)2.5,(decimal)1.2,1));
+            listaEscritorios.Add(new Escritorio(100, "Escritorio pequeño", "EscritorioIKEA3",2,(decimal)0.5,1));
+            List<Armario> listaArmarios = new List<Armario>();
+            listaArmarios.Add(new Armario(500, "Armario bonito", "ArmarioIKEA", 5));
+            listaArmarios.Add(new Armario(1000, "Armario grande", "ArmarioIKEA2", 10));
+            listaArmarios.Add(new Armario(90, "Armario pequeño", "ArmarioIKEA3", 2));
+            List<ClienteS> listaClientesEstandar = new List<ClienteS>();
+            listaClientesEstandar.Add(new ClienteS("19432310y","Dídac","Tarragó","López","Barcelona"));
+            listaClientesEstandar.Add(new ClienteS("49432310y","Pepe","Pepin","Pepon","Madrid"));
+            listaClientesEstandar.Add(new ClienteS("59432310y","Paula","Fernandez","Fernandez","Toledo"));
+            List<ClienteVIP> listaClientesVIP = new List<ClienteVIP>();
+            listaClientesVIP.Add(new ClienteVIP("69432310y","Diego","Lopez","López","Bilbao",50));
+            listaClientesVIP.Add(new ClienteVIP("79432310y","Antonia","Pepan","Pepon","Sabadell",25));
+            listaClientesVIP.Add(new ClienteVIP("89432310y","Pablo","Duque","Fernandez","Terrasa",15));
+            List<SingleVenta> listaVentas = new List<SingleVenta>();
+            listaVentas.Add(new SingleVenta(2, "Venta00", listaArmarios[0],listaClientesEstandar[0]));
+            listaVentas.Add(new SingleVenta(3, "Venta01", listaArmarios[1],listaClientesVIP[0]));
+            listaVentas.Add(new SingleVenta(10, "Venta02", listaArmarios[2],listaClientesEstandar[1]));
+            List<Tuple<string, object>> listaDeListas = new List<Tuple<string, object>>();
+            listaDeListas.Add(new Tuple<string, object>("Ventas", listaVentas));
+            listaDeListas.Add(new Tuple<string, object>("Armarios", listaArmarios));
+            listaDeListas.Add(new Tuple<string, object>("Escritorios", listaEscritorios));
+            listaDeListas.Add(new Tuple<string, object>("ClientesVIP", listaClientesVIP));
+            listaDeListas.Add(new Tuple<string, object>("ClientesEstandar", listaClientesEstandar));
+            
+            return listaDeListas;
         }
 
+        static List<T> ObtenerListaPorTipo<T>(List<Tuple<string, object>> listaDeListas, string tipo)
+        {
+            var listaTuple = listaDeListas.Find(tuple => tuple.Item1 == tipo);
 
-
-
+            if (listaTuple != null && listaTuple.Item2 is List<T> lista)
+            {
+                return lista;
+            }
+            else
+            {
+                Console.WriteLine($"La lista de {tipo} no se encontró.");
+                return new List<T>();
+            }
+        }
         //MENU
         public int menuPrincipal()
         {
@@ -97,7 +152,7 @@ namespace Ventas
             int optionSelected = int.Parse(Console.ReadLine());
             return optionSelected;
         }
-        public void LOGICA(List<SingleVenta> lista,List<Armario> listaArmarios, List<ClienteVIP> listaVIP, List<ClienteS> listaClienteStandar)
+        public void LOGICA(List<Tuple<string, object>> lista)
         {
             while(true)
             {
@@ -106,7 +161,7 @@ namespace Ventas
                 switch (optionSelected)
                 {
                     case 1: 
-                        lista= crearVenta(lista,listaArmarios,listaClienteStandar,listaVIP);
+                        crearVenta(lista);
                         break;  
                     case 2:
                         facturarVenta(lista);
@@ -118,14 +173,14 @@ namespace Ventas
                         UsandoTax(lista);
                         break;
                     case 5:
-                        LOGICA_CLIENTES(lista,listaArmarios,listaVIP, listaClienteStandar);
+                        LOGICA_CLIENTES(lista);
                         break;
                     case 8:
                         ListarVentas(lista);
                         break;
                     case 9:
                         Console.WriteLine("===LISTA DE ARMARIOS===");
-                        ListarArmarios(listaArmarios);
+                        ListarArmarios(lista);
                         Console.WriteLine("=======================");
                         break;
                     case 0:
@@ -141,7 +196,7 @@ namespace Ventas
                 Console.WriteLine("");    
             }
         }
-        public void LOGICA_CLIENTES(List<SingleVenta> lista,List<Armario> listaArmarios, List<ClienteVIP> listaVIP,List<ClienteS> listaClienteStandar)
+        public void LOGICA_CLIENTES(List<Tuple<string, object>> lista)
         {
             while(true)
             {
@@ -158,12 +213,12 @@ namespace Ventas
                             if(opcion==1)
                             {
                                 //REGISTRAR CLIENTE VIP
-                                listaVIP=crearClienteVIP(listaVIP);
+                                crearClienteVIP(lista);
                                 break;
                             }else if(opcion==2)
                             {
                                 //REGISTRAR CLIENTE STANDARD
-                                listaClienteStandar=crearClienteStandar(listaClienteStandar);
+                                crearClienteStandar(lista);
                                 break;
                             }else{
                                 Console.WriteLine("Opcion incorrecta.\n");
@@ -172,15 +227,15 @@ namespace Ventas
                         break;  
                     case 2:
                         //VER CLIENTES STANDARD
-                        ListarClientesEstandar(listaClienteStandar);
+                        ListarClientesEstandar(lista);
                         break;
                     case 3:
                         //VER CLIENTES VIP
-                        ListarClientesVIP(listaVIP);
+                        ListarClientesVIP(lista);
                         break;
                     case 4:
                         //MODIFICAR DESCUENTOS
-                        modificarDescuentoVIP(listaVIP);
+                        modificarDescuentoVIP(lista);
                         break;
                     case 7:
                         //MEJORAR CLIENTE
@@ -192,7 +247,7 @@ namespace Ventas
                         //ELIMINAR CLIENTE VIP
                         break;
                     case 0:
-                        LOGICA(lista,listaArmarios,listaVIP,listaClienteStandar);
+                        LOGICA(lista);
                         break;
                     default:
                         break;
@@ -206,7 +261,7 @@ namespace Ventas
 
 
         //CREAR CLIENTES
-        public List<ClienteVIP> crearClienteVIP(List<ClienteVIP> lCliente)
+        public void crearClienteVIP(List<Tuple<string, object>> lista)
         {
             string nombre, apellido, apellido2, identificacion, direccion;
             int descuento;
@@ -225,15 +280,21 @@ namespace Ventas
             descuento = int.Parse(Console.ReadLine());
 
             ClienteVIP clienteVIP = new ClienteVIP(identificacion,nombre,apellido,apellido2,direccion,descuento);
-            lCliente.Add(clienteVIP);
             
-            Console.WriteLine("");
-            Console.WriteLine($"Sr. {clienteVIP._apellido} registrado.");
-            Console.WriteLine("");
+            var clientesTuple = lista.Find(tuple => tuple.Item1 == "ClientesVIP");
 
-            return lCliente;
+            if (clientesTuple != null && clientesTuple.Item2 is List<ClienteVIP> lCliente)
+            {
+                //GUARDANDO
+                lCliente.Add(clienteVIP);
+                Console.WriteLine("");
+                Console.WriteLine($"Sr./Sra. {clienteVIP._apellido} registrado/a.");
+                Console.WriteLine("");
+            }
+            
+
         }
-        public List<ClienteS> crearClienteStandar(List<ClienteS> listaClienteStandar)
+        public void crearClienteStandar(List<Tuple<string, object>> lista)
         {
             string nombre, apellido, apellido2, identificacion, direccion;
             
@@ -249,27 +310,35 @@ namespace Ventas
             direccion = Console.ReadLine();
 
             ClienteS clienteS = new ClienteS(identificacion,nombre,apellido,apellido2,direccion);
-            listaClienteStandar.Add(clienteS);
             
-            Console.WriteLine("");
-            Console.WriteLine($"Sr. {clienteS._apellido} registrado.");
-            Console.WriteLine("");
+            var clientesTuple = lista.Find(tuple => tuple.Item1 == "ClientesEstandar");
 
-            return listaClienteStandar;
+            if (clientesTuple != null && clientesTuple.Item2 is List<ClienteS> lCliente)
+            {
+                //GUARDANDO
+                lCliente.Add(clienteS);
+                Console.WriteLine("");
+                Console.WriteLine($"Sr./Sra. {clienteS._apellido} registrado/a.");
+                Console.WriteLine("");
+            }
         }
 
 
 
 
         //CREAR VENTA
-        public List<SingleVenta> crearVenta(List<SingleVenta> l, List<Armario> l2,List<ClienteS> listaClienteStandar,List<ClienteVIP> listaClientesVIP)
+        public void crearVenta(List<Tuple<string, object>> lista)
         {
+
+            List<Armario> listaArmarios= new List<Armario>();
+            listaArmarios=ObtenerListaPorTipo<Armario>(lista,"Armarios");
+            
             Console.WriteLine("");
 
             Console.WriteLine("Escoge el articulo del pedido:");
-            ListarArmarios(l2);
+            ListarArmarios(lista);
             int numeroArticulo =int.Parse(Console.ReadLine());
-            Armario armario = l2[numeroArticulo-1];
+            Armario armario = listaArmarios[numeroArticulo-1];
 
             Console.WriteLine("Introduce la cantidad de articulos: ");
             int cantidadArticulos=int.Parse(Console.ReadLine());
@@ -287,105 +356,149 @@ namespace Ventas
                 if(opcion==1)
                 {
                     //CLIENTE VIP
-                    ListarClientesVIP(listaClientesVIP);
+                    List<ClienteVIP> listaClientesVIP= new List<ClienteVIP>();
+                    listaClientesVIP=ObtenerListaPorTipo<ClienteVIP>(lista,"ClientesVIP");
+                    ListarClientesVIP(lista);
                     Console.WriteLine("Introduce el numero del cliente (posicion):");
                     int posicionCliente = int.Parse(Console.ReadLine());
                     cliente = listaClientesVIP[posicionCliente-1];
                     SingleVenta venta = new SingleVenta(cantidadArticulos,nombre,armario,cliente);
-                    
-                    l.Add(venta);
+                    var ventaTuple = lista.Find(tuple => tuple.Item1 == "Ventas");
+                    if (ventaTuple != null && ventaTuple.Item2 is List<SingleVenta> listaVentas)
+                    {
+                        listaVentas.Add(venta);
+                        Console.WriteLine("");
+                        Console.WriteLine("Venta generada.");
+                        Console.WriteLine("");
+                        ListarVentas(lista);
+                    }
 
                 }else if(opcion==2)
                 {
                     //REGISTRAR CLIENTE STANDARD
-                    ListarClientesEstandar(listaClienteStandar);
+                    List<ClienteS> listaClientes= new List<ClienteS>();
+                    listaClientes=ObtenerListaPorTipo<ClienteS>(lista,"ClientesEstandar");
+                    ListarClientesEstandar(lista);
                     Console.WriteLine("Introduce el numero del cliente (posicion):");
                     int posicionCliente = int.Parse(Console.ReadLine());
-                    cliente = listaClienteStandar[posicionCliente-1];
+                    cliente = listaClientes[posicionCliente-1];
                     SingleVenta venta = new SingleVenta(cantidadArticulos,nombre,armario,cliente);
-                    
-                    l.Add(venta);
+                    var clientesTuple = lista.Find(tuple => tuple.Item1 == "ClientesEstandar");
+                    if (clientesTuple != null && clientesTuple.Item2 is List<SingleVenta> listaVentas)
+                    {
+                        listaVentas.Add(venta);
+                        Console.WriteLine("");
+                        Console.WriteLine("Venta generada.");
+                        Console.WriteLine("");
+                        ListarVentas(lista);
+                    }
                 }else{
                     Console.WriteLine("Opcion incorrecta.\n");
                 }
             }while(opcion!=1&&opcion!=2);
-            Console.WriteLine("");
-            Console.WriteLine("Venta generada.");
-            Console.WriteLine("");
-            ListarVentas(l);
-            return l;
         }
 
 
 
         
         //LISTAR
-        public void ListarVentas(List<SingleVenta> l)
+        public void ListarVentas(List<Tuple<string, object>> lista)
         {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("=============================");
-            Console.WriteLine("=======LISTA DE VENTAS=======");
-            Console.ResetColor();
-            int i = 1;
-            foreach(var venta in l)
+            var ventasTuple = lista.Find(tuple => tuple.Item1 == "Ventas");
+            if (ventasTuple != null && ventasTuple.Item2 is List<SingleVenta> listaVentas)
             {
-                Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine($"{i}-");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("=============================");
+                Console.WriteLine("=======LISTA DE VENTAS=======");
                 Console.ResetColor();
-                Console.WriteLine($"{l[i-1]}");
-                Console.WriteLine("");
-                i++;
+                int i = 1;
+                foreach(var venta in listaVentas)
+                {
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.WriteLine($"{i}-");
+                    Console.ResetColor();
+                    Console.WriteLine($"{listaVentas[i-1]}");
+                    Console.WriteLine("");
+                    i++;
+                }
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine("=============================");
+                Console.ResetColor();
             }
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("=============================");
-            Console.ResetColor();
-        }
-        public void ListarArmarios(List<Armario> l)
-        {
-            int i = 1;
-            foreach(var articulo in l)
-            {
-                Console.WriteLine($"{i}- {articulo._precio} € ({articulo._nombre}) - {articulo._descripcion}");
-                i++;
-            }
-        }
-        public void ListarClientesVIP(List<ClienteVIP> l)
-        {
             
+        }
+        public void ListarArmarios(List<Tuple<string, object>> lista)
+        {
+            var armariosTuple = lista.Find(tuple => tuple.Item1 == "Armarios");
+            int i = 1;
+            if (armariosTuple != null && armariosTuple.Item2 is List<Armario> listaArmarios)
+            {
+                foreach(var articulo in listaArmarios)
+                {
+                    Console.WriteLine($"{i}- {articulo._precio} € ({articulo._nombre}) - {articulo._descripcion}");
+                    i++;
+                }
+            }
+        }
+        public void ListarEscritorios(List<Tuple<string, object>> lista)
+        {
+            var escritoriosTuple = lista.Find(tuple => tuple.Item1 == "Escritorios");
+            int i = 1;
+            if (escritoriosTuple != null && escritoriosTuple.Item2 is List<Escritorio> listaEscritorios)
+            {
+                foreach(var articulo in listaEscritorios)
+                {
+                    Console.WriteLine($"{i}- {articulo._precio} € ({articulo._nombre}) - {articulo._descripcion}");
+                    i++;
+                }
+            }
+        }
+        public void ListarClientesVIP(List<Tuple<string, object>> lista)
+        {
+            var clientesVIPTuple = lista.Find(tuple => tuple.Item1 == "ClientesVIP");
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("===LISTA CLIENTES VIP===");
             Console.ResetColor();
 
             int i = 1;
-            foreach(var venta in l)
+            if (clientesVIPTuple != null && clientesVIPTuple.Item2 is List<ClienteVIP> listaClientesVIP)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"{i}-");
-                Console.ResetColor();
-                Console.WriteLine($"{l[i-1]}");
-                Console.WriteLine("");
-                i++;
+                foreach(var venta in listaClientesVIP)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"{i}-");
+                    Console.ResetColor();
+                    Console.WriteLine($"{listaClientesVIP[i-1]}");
+                    Console.WriteLine("");
+                    i++;
+                }
             }
+            
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("=========================");
             Console.ResetColor();
         }
-        public void ListarClientesEstandar(List<ClienteS> l)
+        public void ListarClientesEstandar(List<Tuple<string, object>> lista)
         {
+            var clientesEstandarTuple = lista.Find(tuple => tuple.Item1 == "ClientesEstandar");
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("=============================");
             Console.WriteLine("===LISTA CLIENTES ESTANDAR===");
             Console.ResetColor();
             int i = 1;
-            foreach(var venta in l)
+            if (clientesEstandarTuple != null && clientesEstandarTuple.Item2 is List<ClienteS> listaClientesEstandar)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"{i}-");
-                Console.ResetColor();
-                Console.WriteLine($"{l[i-1]}");
-                Console.WriteLine("");
-                i++;
+                foreach(var venta in listaClientesEstandar)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine($"{i}-");
+                    Console.ResetColor();
+                    Console.WriteLine($"{listaClientesEstandar[i-1]}");
+                    Console.WriteLine("");
+                    i++;
+                }
             }
+            
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("==============================");
             Console.ResetColor();
@@ -395,53 +508,85 @@ namespace Ventas
 
 
         //CLIENTES
-        public void modificarDescuentoVIP(List<ClienteVIP> l)
+        public void modificarDescuentoVIP(List<Tuple<string, object>> lista)
         {
-            ListarClientesVIP(l);
+            ListarClientesVIP(lista);
+
             Console.WriteLine("Que cliente deseas modificar (posicion nº cliente): ");
             int posicionCliente = int.Parse(Console.ReadLine());
-
-            Console.WriteLine($"Actual descuento: {l[posicionCliente-1]._descuento} %\n"
+            List<ClienteVIP> listaClienteVIP= ObtenerListaPorTipo<ClienteVIP>(lista,"ClientesVIP");
+            Console.WriteLine($"Actual descuento: {listaClienteVIP[posicionCliente-1]._descuento} %\n"
             +"¿Que descuento quieres aplicar a este cliente?");
             int descuentoNuevo = int.Parse(Console.ReadLine());
-            l[posicionCliente-1]._descuento=descuentoNuevo;
+            listaClienteVIP[posicionCliente-1]._descuento=descuentoNuevo;
+            var clientesTuple = lista.Find(tuple => tuple.Item1 == "ClientesVIP");
 
-            Console.WriteLine("Descuento modificado correctamente.\n");
+            if (clientesTuple != null)
+            {
+                // Reemplaza la lista de clientes en la tupla
+                clientesTuple = new Tuple<string, object>("ClientesVIP", listaClienteVIP);
+                Console.WriteLine("Descuento modificado correctamente.\n");
+            }
+            
         }
 
 
 
 
         //USOS DE VENTAS
-        public void facturarVenta(List<SingleVenta> l) 
+        public void facturarVenta(List<Tuple<string, object>> lista) 
         {
-            ListarVentas(l);
+            ListarVentas(lista);
             Console.WriteLine("Introduce el numero de la venta: ");
             int numeroEntero=int.Parse(Console.ReadLine());
-            l[numeroEntero-1].Check();
-            Console.WriteLine("");
-        }
-        public void cancelarVenta(List<SingleVenta> l) 
-        {
-            ListarVentas(l);
-            Console.WriteLine("Introduce el numero de la venta: ");
-            int numeroEntero=int.Parse(Console.ReadLine());
-            l[numeroEntero-1].Cancel(l,numeroEntero-1);
+            
+            List<SingleVenta> listaVentas= ObtenerListaPorTipo<SingleVenta>(lista,"Ventas");
+            listaVentas[numeroEntero-1].Check();
             
             Console.WriteLine("");
         }
-        public void UsandoTax(List<SingleVenta> l)
+        public void cancelarVenta(List<Tuple<string, object>> lista) 
         {
-            ListarVentas(l);
+            ListarVentas(lista);
+            Console.WriteLine("Introduce el numero de la venta: ");
+            int numeroEntero=int.Parse(Console.ReadLine());
+
+            List<SingleVenta> listaVentas= ObtenerListaPorTipo<SingleVenta>(lista,"Ventas");
+
+            listaVentas[numeroEntero-1].Cancel(listaVentas,numeroEntero-1);
+            var VentasTuple = lista.Find(tuple => tuple.Item1 == "Ventas");
+
+            if (VentasTuple != null)
+            {
+                // Reemplaza la lista de clientes en la tupla
+                VentasTuple = new Tuple<string, object>("Ventas", listaVentas);
+                Console.WriteLine("Venta cancelada.\n");
+            }
+            Console.WriteLine("");
+        }
+        public void UsandoTax(List<Tuple<string, object>> lista)
+        {
+            ListarVentas(lista);
             
             Console.WriteLine("Introduce el numero de la venta: ");    
             int numeroEntero=int.Parse(Console.ReadLine());
-            
-            Console.WriteLine($"La venta que ha seleccionado tiene un IVA del {(l[numeroEntero-1]._iva)/10}.\n"
+
+            List<SingleVenta> listaVentas= ObtenerListaPorTipo<SingleVenta>(lista,"Ventas");
+
+            Console.WriteLine($"La venta que ha seleccionado tiene un IVA del {(listaVentas[numeroEntero-1]._iva)/10}.\n"
             +$"In troduce el numero valor: ");
             int IVA=int.Parse(Console.ReadLine());
 
-            l[numeroEntero-1].Tax(IVA);
+            listaVentas[numeroEntero-1].Tax(IVA);
+
+            var VentasTuple = lista.Find(tuple => tuple.Item1 == "Ventas");
+
+            if (VentasTuple != null)
+            {
+                // Reemplaza la lista de clientes en la tupla
+                VentasTuple = new Tuple<string, object>("Ventas", listaVentas);
+                Console.WriteLine("IVA modificado correctamente.\n");
+            }
             Console.WriteLine("");
         }
     }
