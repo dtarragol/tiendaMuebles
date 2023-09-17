@@ -30,10 +30,7 @@ namespace Ventas.objetos
     {
 
     }
-    interface IDescontar
-    {
-
-    }
+    
     public class ClienteVIP : Cliente, IComprar, IRecoger, IReservar
     {
         public decimal _descuento;
@@ -73,4 +70,5 @@ namespace Ventas.objetos
             $"Direccion: {this._direccion}";
         }
     }
+    
 }

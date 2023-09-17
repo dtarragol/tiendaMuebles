@@ -292,7 +292,9 @@ namespace Ventas
                     int posicionCliente = int.Parse(Console.ReadLine());
                     cliente = listaClientesVIP[posicionCliente-1];
                     SingleVenta venta = new SingleVenta(cantidadArticulos,nombre,armario,cliente);
+                    
                     l.Add(venta);
+
                 }else if(opcion==2)
                 {
                     //REGISTRAR CLIENTE STANDARD
@@ -301,6 +303,7 @@ namespace Ventas
                     int posicionCliente = int.Parse(Console.ReadLine());
                     cliente = listaClienteStandar[posicionCliente-1];
                     SingleVenta venta = new SingleVenta(cantidadArticulos,nombre,armario,cliente);
+                    
                     l.Add(venta);
                 }else{
                     Console.WriteLine("Opcion incorrecta.\n");
